@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a RESTful API built with FastAPI for managing a book collection. It provides comprehensive CRUD (Create, Read, Update, Delete) operations for books with proper error handling, input validation, and documentation.
+This project is a RESTful API built with FastAPI for managing a book collection. It provides operations to retrieve book details, validate input, and return appropriate error responses. The API is secured behind an Nginx reverse proxy and follows a CI/CD pipeline for automated testing and deployment.
 
 ## Features
 
@@ -38,11 +38,13 @@ fastapi-book-project/
 
 ## Technologies Used
 
-- Python 3.12
-- FastAPI
-- Pydantic
-- pytest
-- uvicorn
+- **Python 3.12**
+- **FastAPI** (Web Framework)
+- **Pydantic** (Validation)
+- **pytest** (Testing)
+- **uvicorn** (ASGI Server)
+- **Nginx** (Reverse Proxy)
+- **GitHub Actions** (CI/CD Automation)
 
 ## Installation
 
@@ -71,7 +73,7 @@ pip install -r requirements.txt
 1. Start the server:
 
 ```bash
-uvicorn main:app
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 2. Access the API documentation:
@@ -128,6 +130,47 @@ The API includes proper error handling for:
 - Invalid book IDs
 - Invalid genre types
 - Malformed requests
+
+## Deployment (CI/CD Pipeline)
+
+This project is deployed using **GitHub Actions** and **Nginx**. The CI/CD pipeline ensures:
+
+- ✅ **CI Pipeline (Testing)**
+  - Runs automatically on **pull requests to `main`**
+  - Executes `pytest` to validate API functionality
+  - Fails if any test does not pass
+
+- ✅ **CD Pipeline (Deployment)**
+  - Triggers on **merging a pull request into `main`**
+  - SSHs into an **AWS EC2 instance**
+  - Pulls the latest code and restarts the FastAPI service
+
+---
+## Nginx Configuration (Reverse Proxy)
+
+This API is served using **Nginx** to handle incoming requests.
+
+### **Nginx Configuration File:**
+
+```nginx
+server {
+    listen 80;
+    server_name your_domain_or_ip;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+### **Enable and Restart Nginx**
+```bash
+sudo ln -s /etc/nginx/sites-available/fastapi /etc/nginx/sites-enabled/
+sudo systemctl restart nginx
+```
 
 ## Contributing
 
