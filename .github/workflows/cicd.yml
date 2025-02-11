@@ -44,54 +44,15 @@ jobs:
       - name: Get Source Code
         uses: actions/checkout@v3
 
-      - name: Set Up Python Environment
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-
       - name: Deploy to AWS
-        env:
-          SSH_KEY: ${{ secrets.PRIVATE_KEY }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          REMOTE_USER: ubuntu
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $REMOTE_USER@$SERVER_HOST << 'EOF'
-            set -e
-            cd /home/ubuntu/hngx-stage2-fastapi-book-project
-
-            git fetch --all
-            git reset --hard origin/main
-            git pull origin main || exit 1
-
-            source venv/bin/activate
-            pip install --upgrade pip
-            pip install -r requirements.txt || exit 1
-
-            sudo cp nginx.conf /etc/nginx/sites-available/bookapi
-            sudo ln -sf /etc/nginx/sites-available/bookapi /etc/nginx/sites-enabled/
-            sudo nginx -t && sudo systemctl reload nginx
-            sudo tee /etc/systemd/system/bookapi.service > /dev/null <<EOT
-            [Unit]
-            Description=FastAPI Service
-            After=network.target
-
-            [Service]
-            User=ubuntu
-            Group=ubuntu
-            WorkingDirectory=/home/ubuntu/hngx-stage2-fastapi-book-project
-            ExecStart=/home/ubuntu/hngx-stage2-fastapi-book-project/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
-            Restart=always
-
-            [Install]
-            WantedBy=multi-user.target
-            EOT
-
-            sudo systemctl daemon-reload
-            sudo systemctl enable fastapi
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SERVR_HOST }}
+          username: ubuntu
+          key: ${{ secrets.PRIVATE_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/fastapi-book-project
+            git pull origin main
+            source /home/ubuntu/fastapi-book-project/venv/bin/activate  
+            pip install -r requirements.txt               
             sudo systemctl restart fastapi
-            echo "🚀 Deployment complete!"
-          EOF
