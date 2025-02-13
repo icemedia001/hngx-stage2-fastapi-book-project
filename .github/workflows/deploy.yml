@@ -18,12 +18,11 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            set -e
-            cd /home/ubuntu/hngx-stage2-fastapi-book-project
-            git fetch origin main
-            git reset --hard origin/main
-            source /home/ubuntu/hngx-stage2-fastapi-book-project/venv/bin/activate  
-            pip install -r requirements.txt
-            sudo systemctl daemon-reload               
-            sudo systemctl restart bookapi
+            cd /home/ubuntu/hngx-stage2-fastapi-book-project || exit 1
+            git fetch origin main || exit 1
+            git reset --hard origin/main || exit 1
+            source /home/ubuntu/hngx-stage2-fastapi-book-project/venv/bin/activate || exit 1  
+            pip install -r requirements.txt || exit 1
+            sudo systemctl daemon-reload || exit 1                
+            sudo systemctl restart bookapi || exit 1
             echo "Deployment complete!"
