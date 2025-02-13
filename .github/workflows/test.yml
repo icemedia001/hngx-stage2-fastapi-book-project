@@ -26,5 +26,4 @@ jobs:
 
       - name: Run Pytest
         run: |
-          set -e
-          pytest -x
+          pytest --maxfail=1
