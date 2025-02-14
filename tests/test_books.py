@@ -50,3 +50,40 @@ def test_delete_book():
 
     response = client.get("/books/3")
     assert response.status_code == 404
+
+def test_get_non_existent_book():
+    """Test fetching a book that does not exist"""
+    response = client.get("/books/9999")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Book not found"}
+
+def test_get_invalid_book_id():
+    """Test invalid book ID cases"""
+    response = client.get("/books/abc")
+    assert response.status_code == 422
+
+    response = client.get("/books/-1")
+    assert response.status_code == 404
+
+def test_create_book_with_missing_fields():
+    """Test book creation with missing required fields"""
+    incomplete_book = {"title": "Incomplete Book"}
+    response = client.post("/books/", json=incomplete_book)
+    assert response.status_code == 422
+
+def test_update_non_existent_book():
+    """Test updating a book that does not exist"""
+    updated_book = {
+        "id": 999,
+        "title": "Unknown Book",
+        "author": "Unknown",
+        "publication_year": 2025,
+        "genre": "Sci-Fi",
+    }
+    response = client.put("/books/999", json=updated_book)
+    assert response.status_code == 404
+
+def test_delete_non_existent_book():
+    """Test deleting a book that does not exist"""
+    response = client.delete("/books/999")
+    assert response.status_code == 404
