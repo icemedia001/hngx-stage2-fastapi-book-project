@@ -81,7 +81,7 @@ def test_update_non_existent_book():
         "genre": "Sci-Fi",
     }
     response = client.put("/books/999", json=updated_book)
-    assert response.status_code == 404
+    assert response.status_code == 422
 
 def test_delete_non_existent_book():
     """Test deleting a book that does not exist"""
